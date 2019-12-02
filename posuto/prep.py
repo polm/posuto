@@ -45,11 +45,41 @@ REASON = ('変更なし', '市政・区政・町政・分区・政令指定都�
 NOTE_REGEX = '([^（]*)(（.*）?)?'
 
 def build_json():
+    MULTILINE = False
+    MLNBR = False # multiline neighborhood
     data = {}
+    dupes = set()
     with open('raw/ken_all.utf8.csv') as csvfile:
         reader = csv.DictReader(csvfile, FIELDS)
         for row in reader:
             code = row['postal_code']
+            if False and code in data:
+                if not code in dupes:
+                    print('-----')
+                    print('dupe:', code, data[code]['city'], data[code]['neighborhood'])
+                print("dupe:", code, row['city'], row['neighborhood'])
+                dupes.add(code)
+
+            if MULTILINE:
+                MLNBR += row['neighborhood']
+                if '）' in row['neighborhood']:
+                    MULTILINE = False
+                    row['neighborhood'] = MLNBR
+                    row['multiline'] = True
+                    MLNBR = False
+                else:
+                    continue
+
+            # handle long name nonsense 
+            # technically, if the neighborhood name is >38 full width chars,
+            # another line is added and all other fields are copied. However,
+            # where the line break is inserted seems random. The only sign is
+            # open parens. Common in areas in Kyoto that use the
+            # intersection-relative addressing system.
+            
+            if '（' in row['neighborhood'] and '）' not in row['neighborhood']:
+                MULTILINE = True
+                MLNBR = row['neighborhood']
 
             # fix special case
             # only occurs in format:
@@ -66,16 +96,18 @@ def build_json():
                 # don't need kana for note
                 row['neighborhood_kana'] = re.sub('\(.*\)?', '', row['neighborhood_kana'])
 
+
+
             # fix hankaku
             for field in PARTS:
                 key = field + '_kana'
                 row[key] = mojimoji.han_to_zen(row[key])
 
             # handle flags
-            row['partial'] = row['partial'] == 1
-            row['koazabanchi'] = row['koazabanchi'] == 1
-            row['chome'] = row['chome'] == 1
-            row['multi'] = row['multi'] == 1
+            row['partial'] = int(row['partial']) == 1
+            row['koazabanchi'] = int(row['koazabanchi']) == 1
+            row['chome'] = int(row['chome']) == 1
+            row['multi'] = int(row['multi']) == 1
             row['update_status'] = STATUS[int(row['update_status'])]
             row['update_reason'] = REASON[int(row['update_reason'])]
 
@@ -85,6 +117,8 @@ def build_json():
                 row['neighborhood_kana'] = ''
                 row['note'] = '以下に掲載がない場合'
             data[code] = row
+
+    # romaji processing
     with open('raw/ken_all_rome.utf8.csv') as csvfile:
         romajireader = csv.DictReader(csvfile, ROMAJI_FIELDS)
         for row in romajireader:
@@ -92,6 +126,17 @@ def build_json():
             if code not in data:
                 print("ERROR: Postal code {} only in romaji data".format(code))
                 continue
+
+            # We don't need romaji for notes, so just deal with the first part
+            if data[code].get('multiline'):
+                if 'neighborhood_romaji' not in data[code]:
+                    for field in PARTS:
+                        key = field + '_romaji'
+                        data[code][key] = row[key].title()
+                    data[code]['neighborhood_romaji'] = re.sub(' ?\(.*', '', row['neighborhood_romaji']).title()
+                continue
+
+
             # remove notes
             if 'note' in data[code]:
                 row['neighborhood_romaji'] = re.sub(' ?\(.*\)?', '', row['neighborhood_romaji']) 
