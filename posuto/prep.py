@@ -47,6 +47,7 @@ NOTE_REGEX = '([^（]*)(（.*）?)?'
 def build_json():
     MULTILINE = False
     MLNBR = False # multiline neighborhood
+    MLNBRK = False # kana
     data = {}
     dupes = set()
     with open('raw/ken_all.utf8.csv') as csvfile:
@@ -54,19 +55,24 @@ def build_json():
         for row in reader:
             code = row['postal_code']
             if False and code in data:
-                if not code in dupes:
+                if code not in dupes:
                     print('-----')
                     print('dupe:', code, data[code]['city'], data[code]['neighborhood'])
                 print("dupe:", code, row['city'], row['neighborhood'])
+                if (not '市' in row['city']) and (not '郡' in row['city']):
+                    print("NOOOO", code, row['city'])
                 dupes.add(code)
 
             if MULTILINE:
                 MLNBR += row['neighborhood']
+                MLNBRK += row['neighborhood_kana']
                 if '）' in row['neighborhood']:
                     MULTILINE = False
                     row['neighborhood'] = MLNBR
+                    row['neighborhood_kana'] = MLNBRK
                     row['multiline'] = True
                     MLNBR = False
+                    MLNBRK = False
                 else:
                     continue
 
@@ -80,6 +86,8 @@ def build_json():
             if '（' in row['neighborhood'] and '）' not in row['neighborhood']:
                 MULTILINE = True
                 MLNBR = row['neighborhood']
+                MLNBRK = row['neighborhood_kana']
+                continue
 
             # fix special case
             # only occurs in format:
@@ -95,8 +103,6 @@ def build_json():
                 row['note'] = mojimoji.zen_to_han(row['note'], kana=False) # no zengaku :P
                 # don't need kana for note
                 row['neighborhood_kana'] = re.sub('\(.*\)?', '', row['neighborhood_kana'])
-
-
 
             # fix hankaku
             for field in PARTS:
@@ -116,6 +122,14 @@ def build_json():
                 row['neighborhood'] = ''
                 row['neighborhood_kana'] = ''
                 row['note'] = '以下に掲載がない場合'
+
+            # finally, if this is for an area with an entry already, add an alternate
+            # note that unlike long rows, alternates are not always sequential.
+            if code in data:
+                if 'alternates' not in data[code]:
+                    data[code]['alternates'] = []
+                data[code]['alternates'].append(row)
+                continue
             data[code] = row
 
     # romaji processing
@@ -143,9 +157,18 @@ def build_json():
             # remove junk
             if row['neighborhood_romaji'] == 'IKANIKEISAIGANAIBAAI':
                 row['neighborhood_romaji'] = ''
+
+            # have to check for alternates
+            if 'city_romaji' in data[code] and 'alternates' in data[code]:
+                # Use the first unset one. Setting based on kanji match might be better.
+                entry = [ee for ee in data[code]['alternates'] if 'city_romaji' not in ee][0]
+            else:
+                entry = data[code]
+
+            # set the fields
             for field in PARTS:
                 key = field + '_romaji'
-                data[code][key] = row[key].title()
+                entry[key] = row[key].title()
     with open('postaldata.json', 'w') as outfile:
         outfile.write(json.dumps(data))
 
