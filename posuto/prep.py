@@ -54,6 +54,11 @@ def build_json():
         reader = csv.DictReader(csvfile, FIELDS)
         for row in reader:
             code = row['postal_code']
+            # defaults
+            row['multiline'] = False
+            row['alternates'] = []
+            row['note'] = None
+
             if False and code in data:
                 if code not in dupes:
                     print('-----')
@@ -126,8 +131,6 @@ def build_json():
             # finally, if this is for an area with an entry already, add an alternate
             # note that unlike long rows, alternates are not always sequential.
             if code in data:
-                if 'alternates' not in data[code]:
-                    data[code]['alternates'] = []
                 data[code]['alternates'].append(row)
                 continue
             data[code] = row
