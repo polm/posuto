@@ -1,9 +1,9 @@
 
-all: posuto/postaldata.json.gz
+all: posuto/postaldata.json
 
 clean:
 	rm raw/*
-	rm posuto/postaldata.json.gz
+	rm posuto/postaldata.json
 
 raw/ken_all.zip:
 	wget -O raw/ken_all.zip 'https://www.post.japanpost.jp/zipcode/dl/kogaki/zip/ken_all.zip'
@@ -22,7 +22,5 @@ raw/ken_all_rome.utf8.csv: raw/ken_all_rome.zip
 	# iconv can be installed through your OS package manager
 	iconv -f sjis -t utf8 raw/KEN_ALL_ROME.CSV > raw/ken_all_rome.utf8.csv
 
-posuto/postaldata.json.gz: raw/ken_all.utf8.csv raw/ken_all_rome.utf8.csv
+posuto/postaldata.json: raw/ken_all.utf8.csv raw/ken_all_rome.utf8.csv
 	python posuto/prep.py
-	rm -f posuto/postaldata.json.gz
-	gzip posuto/postaldata.json
