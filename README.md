@@ -36,6 +36,9 @@ Example usage:
     print(🗼.note)
     # None
 
+**Note:** Unfortunately 〒 and 🗼 are not valid identifiers in Python, so the
+above is pseudocode. If you change the variable names it will work.
+
 You can provide a postal code with basic formatting, and postal data will be
 returned as a named tuple with a few convenience functions. Read on for details
 of how quirks in the original data are handled.
