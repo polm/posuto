@@ -1,1 +1,1 @@
-from .posuto import get_postal_data
+from .posuto import get

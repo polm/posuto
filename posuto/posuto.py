@@ -32,7 +32,7 @@ class PostalCode(PostalCodeBase):
             self.city_kana,
             self.neighborhood_kana])
 
-def get_postal_data(code):
+def get(code):
     code = re.sub('[- 〒]', '', code)
     base = dict(DATA[code])
     # now make it a named tuple
