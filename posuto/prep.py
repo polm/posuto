@@ -180,7 +180,7 @@ def build_json():
             for field in PARTS:
                 key = field + '_romaji'
                 entry[key] = row[key].title()
-    with open('postaldata.json', 'w') as outfile:
+    with open('posuto/postaldata.json', 'w') as outfile:
         outfile.write(json.dumps(data))
 
 if __name__ == '__main__':
