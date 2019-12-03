@@ -1,10 +1,19 @@
 # posuto
 
-This is a wrapper for the postal code data distributed by Japan Post. You can
-download the original data
-[here](https://www.post.japanpost.jp/zipcode/download.html).
+Posuto is a wrapper for the [postal code
+data](https://www.post.japanpost.jp/zipcode/download.html) distributed by Japan
+Post. It makes mapping Japanese postal codes to addresses easier than working
+with the raw CSV.
 
 <img src="https://github.com/polm/posuto/raw/master/postcharacter.png" width=125 height=125 alt="Postbox character by Irasutoya" />
+
+Features:
+
+- multi-line neighborhoods are joined
+- parenthetical notes are put in a separate field
+- change reasons are converted from flags to labels
+- romaji and kana records are unified for easy access
+- codes with multiple areas provide a list of alternates
 
 To install:
 
@@ -50,10 +59,12 @@ The primary fields of an address and the translations preferred here for each ar
 - 都道府県: prefecture
 - 市区町村: city
 - 町域名: neighborhood
-    
+
+```
     🗼 = 〒.get('〒105-0011')
     print(🗼.prefecture, 🗼.city, 🗼.neighborhood)
     # "東京都 港区 芝公園"
+```
 
 ## Notes
 
