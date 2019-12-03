@@ -128,5 +128,6 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# don't check in zipped postoffice data
+# don't check in zipped data
 raw/*.zip
+posuto/*.gz
