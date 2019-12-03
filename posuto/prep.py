@@ -181,7 +181,7 @@ def build_json():
                 key = field + '_romaji'
                 entry[key] = row[key].title()
     with open('posuto/postaldata.json', 'w') as outfile:
-        outfile.write(json.dumps(data))
+        outfile.write(json.dumps(data, ensure_ascii=False, indent=2))
 
 if __name__ == '__main__':
     build_json()
