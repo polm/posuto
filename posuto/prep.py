@@ -1,7 +1,15 @@
 import re
 import csv
 import json
-import mojimoji
+
+try:
+    import mojimoji
+except ImportError:
+    import sys
+    print("Building the json requires mojimoji for character conversion. Run this to install it:")
+    print()
+    print("    pip install mojimoji")
+    sys.exit(1)
 
 # original data README:
 # https://www.post.japanpost.jp/zipcode/dl/readme.html
