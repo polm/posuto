@@ -10,6 +10,10 @@ def gzip_postal_data():
     jsonfile = curdir / 'posuto/postaldata.json'
     gzfile = curdir / 'posuto/postaldata.json.gz'
 
+    if gzfile.is_file() and not jsonfile.is_file():
+        # this is an install that already has the gzip
+        return
+
     if gzfile.is_file() and gzfile.stat().st_mtime > jsonfile.stat().st_mtime:
         # we're up to date, nothing to do.
         return
