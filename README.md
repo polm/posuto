@@ -54,7 +54,7 @@ how they're dealt with.
 As another note, in normal usage posuto doesn't require any dependencies. When
 actually building the postal data from the raw CSVs
 [mojimoji](https://github.com/studio-ousia/mojimoji) is used for character
-conversion, and iconv for encoding conversion.
+conversion and iconv for encoding conversion.
 
 ## Field names
 
@@ -118,8 +118,8 @@ reasonable word boundary). The only indicator of long lines is an unclosed
 parenthesis on the first line. Such long lines are always in order in the
 original file.
 
-For this library, the parenthetical information is considered a note and put in
-the `notes` field. 
+In posuto, the parenthetical information is considered a note and put in
+the `note` field. 
 
     omiya = 〒.get('6020847')
     print(omiya)
