@@ -21,7 +21,7 @@ def gzip_postal_data():
 
 setup(
     name='posuto',
-    version='0.1.1',
+    version='0.1.2',
     url='https://github.com/polm/posuto.git',
     author="Paul O'Leary McCann",
     author_email='polm@dampfkraft.com',
