@@ -36,6 +36,10 @@ Example usage:
     print(🗼.note)
     # None
 
+You can provide a postal code with basic formatting, and postal data will be
+returned as a named tuple with a few convenience functions. Read on for details
+of how quirks in the original data are handled.
+
 # Details
 
 The original CSV files are managed in source control here but are not
@@ -115,9 +119,7 @@ parenthesis on the first line. Such long lines are always in order in the
 original file.
 
 For this library, the parenthetical information is considered a note and put in
-the `notes` field. It may be possible to improve on this by splitting the text
-into a list, but the format of long names is irregular enough that it's likely
-not worth the effort.
+the `notes` field. 
 
     omiya = 〒.get('6020847')
     print(omiya)
