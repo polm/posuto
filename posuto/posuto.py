@@ -20,19 +20,26 @@ class PostalCode(PostalCodeBase):
 
     @property
     def romaji(self):
-        return ', '.join([
+        parts = [p for p in (
             self.prefecture_romaji,
             self.city_romaji,
-            self.neighborhood_romaji])
+            self.neighborhood_romaji) if p]
+        return ', '.join(parts)
 
     @property
     def kana(self):
-        return ''.join([
-            self.prefecture_kana,
-            self.city_kana,
-            self.neighborhood_kana])
+        parts = [p for p in (
+            self.prefecture_kana, 
+            self.city_kana, 
+            self.neighborhood_kana) if p]
+        return ''.join(parts)
 
 def get(code):
+    """Get data for a given postal code.
+
+    Extra characters (〒, space, or dash) will be filtered out, but integers
+    are not handled.
+    """
     code = re.sub('[- 〒]', '', code)
     base = dict(DATA[code])
     # now make it a named tuple
