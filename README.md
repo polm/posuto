@@ -38,6 +38,11 @@ runtime.
 The postal code data has many irregularities and strange parts. This explains
 how they're dealt with.
 
+As another note, in normal usage posuto doesn't require any dependencies. When
+actually building the postal data from the raw CSVs
+[mojimoji](https://github.com/studio-ousia/mojimoji) is used for character
+conversion, and iconv for encoding conversion.
+
 ## Field names
 
 The primary fields of an address and the translations preferred here for each are:
