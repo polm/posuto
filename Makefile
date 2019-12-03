@@ -1,6 +1,10 @@
 
 all: posuto/postaldata.json.gz
 
+clean:
+	rm raw/*
+	rm posuto/postaldata.json.gz
+
 raw/ken_all.zip:
 	wget -O raw/ken_all.zip 'https://www.post.japanpost.jp/zipcode/dl/kogaki/zip/ken_all.zip'
 
