@@ -137,6 +137,22 @@ def build_json():
                 row['note'] = '以下に掲載がない場合'
 
             # more junk
+            # Iwateken has 地割 which are usually not parenthesized but are unhelpful.
+            if '地割' in row['neighborhood']:
+                print(row['neighborhood'])
+                neighborhood, note = re.search('([^第]*)(第?[０-９]+地割.*)', row['neighborhood']).groups()
+                row['neighborhood'] = neighborhood
+                if row['note']:
+                    # sometimes there are parentheticals after the 地割 note
+                    row['note'] = note + '(' + row['note'] + ')'
+                else:
+                    row['note'] = note
+                row['neighborhood_kana'] = re.sub('[０-９].*', '', row['neighborhood_kana'])
+                if note[0] == '第':
+                    # cut off the ダイ if necessary
+                    row['neighborhood_kana'] = row['neighborhood_kana'][:-2]
+
+            # more junk
             # Some neighborhoods look like "XXの次に番地がくる場合"
             if '次に番地' in row['neighborhood']:
                 row['neighborhood'] = row['neighborhood'][:-10]
@@ -147,7 +163,7 @@ def build_json():
             # surrounding area is included. However, 一円 is also a place name
             # in exactly one place (5220317). Where it is not part of the place name, 
             # this removes it since it's not even a meaningful note.
-            if row['neighborhood'][-2:] == '一円' and row['neighborhood']) != '一円':
+            if row['neighborhood'][-2:] == '一円' and row['neighborhood'] != '一円':
                 row['neighborhood'] = row['neighborhood'][:-2]
                 row['neighborhood_kana'] = row['neighborhood_kana'][:-4]
 
@@ -176,13 +192,16 @@ def build_json():
                     data[code]['neighborhood_romaji'] = re.sub(' ?\(.*', '', row['neighborhood_romaji']).title()
                 continue
 
-
             # remove notes
             if 'note' in data[code]:
                 row['neighborhood_romaji'] = re.sub(' ?\(.*\)?', '', row['neighborhood_romaji']) 
             # remove junk
             if row['neighborhood_romaji'] == 'IKANIKEISAIGANAIBAAI':
                 row['neighborhood_romaji'] = ''
+            row['neighborhood_romaji'] = re.sub('NOTSUGINIBANCHIGAKURUBAAI', '', row['neighborhood_romaji'])
+            if row['neighborhood_romaji'] != 'ICHIEN':
+                row['neighborhood_romaji'] = re.sub('ICHIEN$', '', row['neighborhood_romaji'])
+            row['neighborhood_romaji'] = re.sub('(DAI)?[0-9]+-CHIWARI.*', '', row['neighborhood_romaji'])
 
             # have to check for alternates
             if 'city_romaji' in data[code] and 'alternates' in data[code]:
