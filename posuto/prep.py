@@ -136,6 +136,21 @@ def build_json():
                 row['neighborhood_kana'] = ''
                 row['note'] = '以下に掲載がない場合'
 
+            # more junk
+            # Some neighborhoods look like "XXの次に番地がくる場合"
+            if '次に番地' in row['neighborhood']:
+                row['neighborhood'] = row['neighborhood'][:-10]
+                row['neighborhood_kana'] = row['neighborhood_kana'][:-13]
+
+            # more junk
+            # "一円" is used after some neighborhood names to indicate the
+            # surrounding area is included. However, 一円 is also a place name
+            # in exactly one place (5220317). Where it is not part of the place name, 
+            # this removes it since it's not even a meaningful note.
+            if row['neighborhood'][-2:] == '一円' and row['neighborhood']) != '一円':
+                row['neighborhood'] = row['neighborhood'][:-2]
+                row['neighborhood_kana'] = row['neighborhood_kana'][:-4]
+
             # finally, if this is for an area with an entry already, add an alternate
             # note that unlike long rows, alternates are not always sequential.
             if code in data:
