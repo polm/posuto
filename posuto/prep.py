@@ -67,15 +67,6 @@ def build_json():
             row['alternates'] = []
             row['note'] = None
 
-            if False and code in data:
-                if code not in dupes:
-                    print('-----')
-                    print('dupe:', code, data[code]['city'], data[code]['neighborhood'])
-                print("dupe:", code, row['city'], row['neighborhood'])
-                if (not '市' in row['city']) and (not '郡' in row['city']):
-                    print("NOOOO", code, row['city'])
-                dupes.add(code)
-
             if MULTILINE:
                 MLNBR += row['neighborhood']
                 MLNBRK += row['neighborhood_kana']
@@ -139,7 +130,6 @@ def build_json():
             # more junk
             # Iwateken has 地割 which are usually not parenthesized but are unhelpful.
             if '地割' in row['neighborhood']:
-                print(row['neighborhood'])
                 neighborhood, note = re.search('([^第]*)(第?[０-９]+地割.*)', row['neighborhood']).groups()
                 row['neighborhood'] = neighborhood
                 if row['note']:
