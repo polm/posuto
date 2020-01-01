@@ -196,7 +196,14 @@ def build_json():
             # have to check for alternates
             if 'city_romaji' in data[code] and 'alternates' in data[code]:
                 # Use the first unset one. Setting based on kanji match might be better.
-                entry = [ee for ee in data[code]['alternates'] if 'city_romaji' not in ee][0]
+                entries = [ee for ee in data[code]['alternates'] if 'city_romaji' not in ee]
+
+                # The romaji file is updates less frequently than the main one
+                # and there can be mismatches here.  In that case just give up.
+                if not entries:
+                    continue
+
+                entry = entries[0]
             else:
                 entry = data[code]
 
