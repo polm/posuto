@@ -98,7 +98,7 @@ Romaji in the original file are in all caps. This is converted to title case.
 The supplied romaji make no effort to accommodate words of foreign origin, so
 "スウェーデンヒルズ" is rendered as "Suedenhiruzu" rather than "Sweden Hills".
 It may be possible to improve on this but it's outside the scope of this
-library; it's better to use a good romanization library.
+library; it's better to use a good romanization library, like [cutlet](https://github.com/polm/cutlet).
 
 Some more issues:
 
