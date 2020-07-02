@@ -1,1 +1,1 @@
-from .posuto import get
+from .posuto import get, DATA
