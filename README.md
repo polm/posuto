@@ -2,11 +2,12 @@
 
 [![Current PyPI packages](https://badge.fury.io/py/posuto.svg)](https://pypi.org/project/posuto/)
 
-
 Posuto is a wrapper for the [postal code
 data](https://www.post.japanpost.jp/zipcode/download.html) distributed by Japan
 Post. It makes mapping Japanese postal codes to addresses easier than working
 with the raw CSV.
+
+**issueを英語で書く必要はありません。**
 
 <img src="https://github.com/polm/posuto/raw/master/postcharacter.png" width=125 height=125 alt="Postbox character by Irasutoya" />
 
