@@ -25,7 +25,7 @@ def gzip_postal_data():
 
 setup(
     name='posuto',
-    version='0.1.10',
+    use_scm_version=True,
     url='https://github.com/polm/posuto.git',
     author="Paul O'Leary McCann",
     author_email='polm@dampfkraft.com',
@@ -33,6 +33,7 @@ setup(
     packages=find_packages(),    
     package_data={'posuto':['postaldata.json.gz']},
     install_requires=[],
+    setup_requires=['setuptools-scm'],
 )
 
 if __name__ == '__main__':
