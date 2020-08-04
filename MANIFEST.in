@@ -1,3 +1,5 @@
 include README.md
 include LICENSE
 include posuto/postaldata.json.gz
+exclude posuto/postaldata.json
+exclude raw/*
