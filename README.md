@@ -41,7 +41,9 @@ Example usage:
     # None
 
 **Note:** Unfortunately 〒 and 🗼 are not valid identifiers in Python, so the
-above is pseudocode. If you change the variable names it will work.
+above is pseudocode. See [examples/sample.py][] for an executable version.
+
+[examples/sample.py]: https://github.com/polm/posuto/blob/master/examples/sample.py
 
 You can provide a postal code with basic formatting, and postal data will be
 returned as a named tuple with a few convenience functions. Read on for details
@@ -72,8 +74,9 @@ The primary fields of an address and the translations preferred here for each ar
 - 町域名: neighborhood
 
 ```
-    🗼 = 〒.get('〒105-0011')
-    print(🗼.prefecture, 🗼.city, 🗼.neighborhood)
+    # 🗼
+    tt = posuto.get('〒105-0011')
+    print(tt.prefecture, tt.city, tt.neighborhood)
     # "東京都 港区 芝公園"
 ```
 
@@ -84,7 +87,7 @@ always in parenthesis with one exception, "以下に掲載がない場合". All 
 put in the `notes` field, and no attempt is made to extract their yomigana or
 romaji (which are often not available anyway).
 
-    minatoku = 〒.get('1050000')
+    minatoku = posuto.get('1050000')
     print(minatoku.note)
     # "以下に掲載がない場合"
 
@@ -111,7 +114,7 @@ Some more issues:
 
 In general use the romaji here with caution.
 
-    sweden = 〒.get('0613777')
+    sweden = posuto.get('0613777')
     print(sweden.romaji)
     # "Hokkaido, Ishikari Gun Tobetsu Cho, Suedenhiruzu"
 
@@ -128,7 +131,7 @@ original file.
 In posuto, the parenthetical information is considered a note and put in
 the `note` field. 
 
-    omiya = 〒.get('6020847')
+    omiya = posuto.get('6020847')
     print(omiya)
     # "京都府京都市上京区大宮町"
     print(omiya.note)
