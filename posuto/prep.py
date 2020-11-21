@@ -1,6 +1,7 @@
 import re
 import csv
 import json
+import sqlite3
 
 try:
     import mojimoji
@@ -213,6 +214,19 @@ def build_json():
                 entry[key] = row[key].title()
     with open('posuto/postaldata.json', 'w') as outfile:
         outfile.write(json.dumps(data, ensure_ascii=False, indent=2))
+    # write sqlite db
+    conn = sqlite3.connect('posuto/postaldata.db')
+    db = conn.cursor()
+    db.execute("drop table if exists postal_data")
+    db.execute("""
+      create table postal_data (
+        code text, data text)""")
+    for key, val in data.items():
+        entry = json.dumps(val, ensure_ascii=False)
+        db.execute("insert into postal_data(code, data) values (?, ?)",
+                (key, entry))
+    conn.commit()
+    conn.close()
 
 if __name__ == '__main__':
     build_json()

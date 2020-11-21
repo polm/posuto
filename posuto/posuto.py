@@ -1,16 +1,24 @@
 import re
+import io
 import json
-import gzip
+import sqlite3
 from pathlib import Path
 from collections import namedtuple
 
-# get current path
-datapath = Path(__file__).parent / 'postaldata.json.gz'
-with gzip.open(datapath, 'r') as infile:
-    DATA = json.load(infile)
+DBPATH = Path(__file__).parent / 'postaldata.db'
+CONN = sqlite3.connect(DBPATH)
+DB = CONN.cursor()
 
 PostalCodeBase = namedtuple('PostalCode',
         'jisx0402 old_code postal_code prefecture city neighborhood prefecture_kana city_kana neighborhood_kana prefecture_romaji city_romaji neighborhood_romaji partial chome koazabanchi multi multiline update_status update_reason note alternates'.split())
+
+def _fetch_code(code):
+    DB.execute("select data from postal_data where code = ?", (code,))
+    res = DB.fetchone()
+    if res:
+        return json.loads(res[0])
+
+    raise KeyError("No such postal code: " + code)
 
 class PostalCode(PostalCodeBase):
     __slots__ = ()
@@ -41,7 +49,7 @@ def get(code):
     are not handled.
     """
     code = re.sub('[- 〒]', '', code)
-    base = dict(DATA[code])
+    base = dict(_fetch_code(code))
     # now make it a named tuple
     if 'alternates' in base:
         base['alternates'] = [PostalCode(**aa) for aa in base['alternates']]
