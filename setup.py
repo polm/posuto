@@ -31,7 +31,7 @@ setup(
     author_email='polm@dampfkraft.com',
     description='Japanese Postal Code Data',
     packages=find_packages(),    
-    package_data={'posuto':['postaldata.json.gz']},
+    package_data={'posuto':['postaldata.db']},
     install_requires=[],
     setup_requires=['setuptools-scm'],
 )
