@@ -131,3 +131,4 @@ dmypy.json
 # don't check in zipped data
 raw/*.zip
 posuto/*.gz
+posuto/postaldata.db
