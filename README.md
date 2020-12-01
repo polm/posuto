@@ -53,9 +53,9 @@ of how quirks in the original data are handled.
 
 The original CSV files are managed in source control here but are not
 distributed as part of the pip package. Instead, the CSV is converted to JSON,
-which is then gzipped and included in the package distribution. That means most
-of the complexity in code in this package is actually in the build and not at
-runtime.
+which is then put into an sqlite db and included in the package distribution.
+That means most of the complexity in code in this package is actually in the
+build and not at runtime.
 
 The postal code data has many irregularities and strange parts. This explains
 how they're dealt with.
