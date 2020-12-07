@@ -6,6 +6,7 @@ from pathlib import Path
 from collections import namedtuple
 
 DBPATH = Path(__file__).parent / 'postaldata.db'
+DBPATH = str(DBPATH) # for Python <3.7; can remove when support is dropped
 CONN = sqlite3.connect(DBPATH)
 DB = CONN.cursor()
 
