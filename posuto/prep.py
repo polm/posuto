@@ -174,7 +174,20 @@ def build_json():
                 print("ERROR: Postal code {} only in romaji data".format(code))
                 continue
 
-            # We don't need romaji for notes, so just deal with the first part
+            # A hack to fix issue #6. 9218046 is the only postal code that has
+            # a multi-line entry and other data not on a continued line. This
+            # breaks the multiline handling here.
+            # XXX This is brittle and should be replaced
+            if code == '9218046' and '三小牛' in row['neighborhood']:
+                for field in PARTS:
+                    key = field + '_romaji'
+                    data[code]['alternates'][0][key] = row[key].title()
+                data[code]['alternates'][0]['neighborhood_romaji'] = re.sub(' ?\(.*', '', row['neighborhood_romaji']).title()
+                continue
+
+            # We don't need romaji for notes, so just deal with the first line,
+            # and skip following lines. This assumes that a multi-line entry
+            # has no alternates, which is true except for 9218046.
             if data[code].get('multiline'):
                 if 'neighborhood_romaji' not in data[code]:
                     for field in PARTS:
@@ -199,7 +212,7 @@ def build_json():
                 # Use the first unset one. Setting based on kanji match might be better.
                 entries = [ee for ee in data[code]['alternates'] if 'city_romaji' not in ee]
 
-                # The romaji file is updates less frequently than the main one
+                # The romaji file is updated less frequently than the main one
                 # and there can be mismatches here.  In that case just give up.
                 if not entries:
                     continue
