@@ -1,1 +1,1 @@
-from .posuto import get, DBPATH
+from .posuto import get, DBPATH, Posuto

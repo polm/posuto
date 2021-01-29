@@ -149,6 +149,27 @@ For now, if more than one region uses multiple codes, the main entry is for the
 first region listed in the main CSV, and other regions are stored as a list in
 the `alternates` property. There may be a better way to do this.
 
+# Programming Notes
+
+This section is for notes on the use of the library itself as opposed to notes
+about the data structure.
+
+## Multi-threaded Environments
+
+By default, posuto creates a DB connection and cursor on startup and reuses it
+for all requests. In the typical single-threaded, read-only scenario this is
+not a problem, but it causes warnings (and may cause problems) in a
+multi-threaded scenario. In that case you can manage db connections manually
+using a context manager object.
+
+    from posuto import Posuto
+
+    with Posuto() as pp:
+        tower = pp.get('〒105-0011')
+
+Using the object this way the connection will be automatically closed when the
+`with` block is exited.
+
 # License
 
 The original postal data is provided by JP Post with an indication they will

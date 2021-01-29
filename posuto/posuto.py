@@ -4,6 +4,7 @@ import json
 import sqlite3
 from pathlib import Path
 from collections import namedtuple
+from contextlib import contextmanager
 
 DBPATH = Path(__file__).parent / 'postaldata.db'
 DBPATH = str(DBPATH) # for Python <3.7; can remove when support is dropped
@@ -13,9 +14,30 @@ DB = CONN.cursor()
 PostalCodeBase = namedtuple('PostalCode',
         'jisx0402 old_code postal_code prefecture city neighborhood prefecture_kana city_kana neighborhood_kana partial chome koazabanchi multi multiline update_status update_reason note alternates'.split())
 
-def _fetch_code(code):
-    DB.execute("select data from postal_data where code = ?", (code,))
-    res = DB.fetchone()
+
+class Posuto:
+    """A class for managing DB connections.
+
+    In a multi-threaded environment you don't want to share the default DB
+    connection. This class encapsulates a DB connection and can be used as a
+    context manager. 
+    """
+    def __init__(self):
+        self._conn = sqlite3.connect(DBPATH)
+        self._db = self._conn.cursor()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self._conn.close()
+
+    def get(self, code):
+        return get(code, self._db)
+
+def _fetch_code(code, db=DB):
+    db.execute("select data from postal_data where code = ?", (code,))
+    res = db.fetchone()
     if res:
         return json.loads(res[0])
 
@@ -35,7 +57,7 @@ class PostalCode(PostalCodeBase):
             self.neighborhood_kana) if p]
         return ''.join(parts)
 
-def get(code):
+def get(code, db=DB):
     """Get data for a given postal code.
 
     Extra characters (〒, space, or dash) will be filtered out, but integers

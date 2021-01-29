@@ -24,3 +24,9 @@ def test_invalidcode():
     with pytest.raises(KeyError):
         posuto.get('fish')
 
+def test_contextmanager():
+    with posuto.Posuto() as pp:
+        tower = pp.get('〒105-0011')
+        assert str(tower) == '東京都港区芝公園', "Address is wrong"
+        assert tower.kana == 'トウキョウトミナトクシバコウエン', "Address kana is wrong"
+        assert tower.note == None, "Address note is wrong"
