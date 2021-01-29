@@ -11,7 +11,7 @@ CONN = sqlite3.connect(DBPATH)
 DB = CONN.cursor()
 
 PostalCodeBase = namedtuple('PostalCode',
-        'jisx0402 old_code postal_code prefecture city neighborhood prefecture_kana city_kana neighborhood_kana prefecture_romaji city_romaji neighborhood_romaji partial chome koazabanchi multi multiline update_status update_reason note alternates'.split())
+        'jisx0402 old_code postal_code prefecture city neighborhood prefecture_kana city_kana neighborhood_kana partial chome koazabanchi multi multiline update_status update_reason note alternates'.split())
 
 def _fetch_code(code):
     DB.execute("select data from postal_data where code = ?", (code,))
@@ -26,14 +26,6 @@ class PostalCode(PostalCodeBase):
     
     def __str__(self):
         return ''.join([self.prefecture, self.city, self.neighborhood])
-
-    @property
-    def romaji(self):
-        parts = [p for p in (
-            self.prefecture_romaji,
-            self.city_romaji,
-            self.neighborhood_romaji) if p]
-        return ', '.join(parts)
 
     @property
     def kana(self):

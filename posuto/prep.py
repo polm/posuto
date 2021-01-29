@@ -33,20 +33,6 @@ FIELDS = [
 'update_reason' # 0-6
 ]
 
-# original romaji data README:
-# https://www.post.japanpost.jp/zipcode/dl/readme_ro.html
-# Note romaji is all upper case
-
-ROMAJI_FIELDS = [
-'postal_code',
-'prefecture',
-'city',
-'neighborhood',
-'prefecture_romaji',
-'city_romaji',
-'neighborhood_romaji'
-]
-
 PARTS = ('prefecture', 'city', 'neighborhood')
 STATUS = ('変更なし', '変更あり', '廃止')
 REASON = ('変更なし', '市政・区政・町政・分区・政令指定都市施行', '住居表示の実施', '区画整理', '郵便区調整等', '訂正', '廃止')
@@ -165,66 +151,6 @@ def build_json():
                 continue
             data[code] = row
 
-    # romaji processing
-    with open('raw/ken_all_rome.utf8.csv') as csvfile:
-        romajireader = csv.DictReader(csvfile, ROMAJI_FIELDS)
-        for row in romajireader:
-            code = row['postal_code']
-            if code not in data:
-                print("ERROR: Postal code {} only in romaji data".format(code))
-                continue
-
-            # A hack to fix issue #6. 9218046 is the only postal code that has
-            # a multi-line entry and other data not on a continued line. This
-            # breaks the multiline handling here.
-            # XXX This is brittle and should be replaced
-            if code == '9218046' and '三小牛' in row['neighborhood']:
-                for field in PARTS:
-                    key = field + '_romaji'
-                    data[code]['alternates'][0][key] = row[key].title()
-                data[code]['alternates'][0]['neighborhood_romaji'] = re.sub(' ?\(.*', '', row['neighborhood_romaji']).title()
-                continue
-
-            # We don't need romaji for notes, so just deal with the first line,
-            # and skip following lines. This assumes that a multi-line entry
-            # has no alternates, which is true except for 9218046.
-            if data[code].get('multiline'):
-                if 'neighborhood_romaji' not in data[code]:
-                    for field in PARTS:
-                        key = field + '_romaji'
-                        data[code][key] = row[key].title()
-                    data[code]['neighborhood_romaji'] = re.sub(' ?\(.*', '', row['neighborhood_romaji']).title()
-                continue
-
-            # remove notes
-            if 'note' in data[code]:
-                row['neighborhood_romaji'] = re.sub(' ?\(.*\)?', '', row['neighborhood_romaji']) 
-            # remove junk
-            if row['neighborhood_romaji'] == 'IKANIKEISAIGANAIBAAI':
-                row['neighborhood_romaji'] = ''
-            row['neighborhood_romaji'] = re.sub('NOTSUGINIBANCHIGAKURUBAAI', '', row['neighborhood_romaji'])
-            if row['neighborhood_romaji'] != 'ICHIEN':
-                row['neighborhood_romaji'] = re.sub('ICHIEN$', '', row['neighborhood_romaji'])
-            row['neighborhood_romaji'] = re.sub('(DAI)?[0-9]+-CHIWARI.*', '', row['neighborhood_romaji'])
-
-            # have to check for alternates
-            if 'city_romaji' in data[code] and 'alternates' in data[code]:
-                # Use the first unset one. Setting based on kanji match might be better.
-                entries = [ee for ee in data[code]['alternates'] if 'city_romaji' not in ee]
-
-                # The romaji file is updated less frequently than the main one
-                # and there can be mismatches here.  In that case just give up.
-                if not entries:
-                    continue
-
-                entry = entries[0]
-            else:
-                entry = data[code]
-
-            # set the fields
-            for field in PARTS:
-                key = field + '_romaji'
-                entry[key] = row[key].title()
     with open('posuto/postaldata.json', 'w') as outfile:
         outfile.write(json.dumps(data, ensure_ascii=False, indent=2))
     # write sqlite db
