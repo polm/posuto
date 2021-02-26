@@ -33,19 +33,96 @@ FIELDS = [
 'update_reason' # 0-6
 ]
 
+# Readme for jigyousho:
+# https://www.post.japanpost.jp/zipcode/dl/jigyosyo/readme.html
+
+JIGYOU_FIELDS = [
+'jis', # some kind of jis code - README doesn't say which type
+'kana', # kana of business name
+'name', # business name
+'prefecture', 
+'city',
+'neighborhood',
+'banchi', # like 1丁目3-2
+'postal_code', # actual postal code
+'old_code', 
+'post_office', # 取扱局
+'type', # 0 = large office, 1 = po box
+'multiple', # 0 = no, 1 = first of multi, 2 = 2 of multi, 3 = 3 of multi (no higher vals?)
+'correction', # 0 = no correction, 1 = newly added, 5 = removed
+]
+
+
 PARTS = ('prefecture', 'city', 'neighborhood')
 STATUS = ('変更なし', '変更あり', '廃止')
 REASON = ('変更なし', '市政・区政・町政・分区・政令指定都市施行', '住居表示の実施', '区画整理', '郵便区調整等', '訂正', '廃止')
 
 NOTE_REGEX = '([^（]*)(（.*）?)?'
 
-def build_json():
+def build_office_json(fname):
+    """Office data is completely different from normal address data and so is handled separately."""
+    data = {}
+    with open(fname) as csvfile:
+        reader = csv.DictReader(csvfile, JIGYOU_FIELDS)
+        for row in reader:
+            info = {}
+            # copy most keys over
+            for key in 'jis kana name prefecture city neighborhood banchi postal_code old_code post_office'.split():
+                info[key] = row[key]
+
+            # fix kana and banchi
+            for field in ('kana', 'banchi'):
+                # First make sure kana are full width
+                info[field] = mojimoji.han_to_zen(info[field])
+                # then convert numbers/ascii to half width
+                info[field] = mojimoji.zen_to_han(info[field], kana=False)
+
+            # remaining keys get special treatment
+
+            # pobox or office
+            variety = int(row['type'])
+            assert variety in (0, 1), "Unexpected value for type, should be 0 or 1"
+            info['type'] = 'box' if variety == 1 else 'office'
+
+            # actual number seems meaningless
+            info['multiple'] = False if row['multiple'] == '0' else True
+
+            # new status. 5 is also possible but shouldn't be in the file we're checking.
+            status = int(row['correction'])
+            assert status in (0, 1), "Unexpected correction status, should be 0 or 1"
+            info['new'] = True if status == 1 else False
+
+            code = info['postal_code']
+            if code in data:
+                data[code]['alternates'].append(info)
+            else:
+                info['alternates'] = []
+                data[code] = info
+
+    # write json file
+    with open('posuto/officedata.json', 'w') as outfile:
+        outfile.write(json.dumps(data, ensure_ascii=False, indent=2))
+    # write sqlite db
+    conn = sqlite3.connect('posuto/postaldata.db')
+    db = conn.cursor()
+    db.execute("drop table if exists office_data")
+    db.execute("""
+      create table office_data (
+        code text, data text)""")
+    for key, val in data.items():
+        entry = json.dumps(val, ensure_ascii=False)
+        db.execute("insert into office_data(code, data) values (?, ?)",
+                (key, entry))
+    conn.commit()
+    conn.close()
+
+def build_json(fname):
     MULTILINE = False
     MLNBR = False # multiline neighborhood
     MLNBRK = False # kana
     data = {}
     dupes = set()
-    with open('raw/ken_all.utf8.csv') as csvfile:
+    with open(fname) as csvfile:
         reader = csv.DictReader(csvfile, FIELDS)
         for row in reader:
             code = row['postal_code']
@@ -168,4 +245,5 @@ def build_json():
     conn.close()
 
 if __name__ == '__main__':
-    build_json()
+    build_office_json('raw/jigyousho.utf8.csv')
+    build_json('raw/ken_all.utf8.csv')

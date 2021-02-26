@@ -14,6 +14,8 @@ DB = CONN.cursor()
 PostalCodeBase = namedtuple('PostalCode',
         'jisx0402 old_code postal_code prefecture city neighborhood prefecture_kana city_kana neighborhood_kana partial chome koazabanchi multi multiline update_status update_reason note alternates'.split())
 
+OfficeCodeBase = namedtuple('OfficeCode',
+        'jis kana name prefecture city neighborhood banchi postal_code old_code post_office type multiple new alternates'.split())
 
 class Posuto:
     """A class for managing DB connections.
@@ -37,6 +39,12 @@ class Posuto:
 
 def _fetch_code(code, db=DB):
     db.execute("select data from postal_data where code = ?", (code,))
+    res = db.fetchone()
+    if res:
+        return json.loads(res[0])
+
+    # try office codes
+    db.execute("select data from office_data where code = ?", (code,))
     res = db.fetchone()
     if res:
         return json.loads(res[0])
@@ -65,8 +73,16 @@ def get(code, db=DB):
     """
     code = re.sub('[- 〒]', '', code)
     base = dict(_fetch_code(code))
-    # now make it a named tuple
-    if 'alternates' in base:
-        base['alternates'] = [PostalCode(**aa) for aa in base['alternates']]
-    out = PostalCode(**base)
+    # if it's a postal code...
+    if 'prefecture_kana' in base:
+        # now make it a named tuple
+        if 'alternates' in base:
+            base['alternates'] = [PostalCode(**aa) for aa in base['alternates']]
+        out = PostalCode(**base)
+    # if it's an office code...
+    else:
+        if 'alternates' in base:
+            base['alternates'] = [OfficeCodeBase(**aa) for aa in base['alternates']]
+        out = OfficeCodeBase(**base)
+
     return out

@@ -30,3 +30,7 @@ def test_contextmanager():
         assert str(tower) == '東京都港区芝公園', "Address is wrong"
         assert tower.kana == 'トウキョウトミナトクシバコウエン', "Address kana is wrong"
         assert tower.note == None, "Address note is wrong"
+
+def test_office():
+    info = posuto.get('8690198')
+    assert info.name == '長洲町役場', "Address is wrong"
