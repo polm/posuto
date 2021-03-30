@@ -37,7 +37,7 @@ class Posuto:
     def get(self, code):
         return get(code, self._db)
 
-def _fetch_code(code, db=DB):
+def _fetch_code(code, db):
     db.execute("select data from postal_data where code = ?", (code,))
     res = db.fetchone()
     if res:
@@ -72,7 +72,7 @@ def get(code, db=DB):
     are not handled.
     """
     code = re.sub('[- 〒]', '', code)
-    base = dict(_fetch_code(code))
+    base = dict(_fetch_code(code, db))
     # if it's a postal code...
     if 'prefecture_kana' in base:
         # now make it a named tuple
