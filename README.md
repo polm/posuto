@@ -7,6 +7,9 @@ data](https://www.post.japanpost.jp/zipcode/download.html) distributed by Japan
 Post. It makes mapping Japanese postal codes to addresses easier than working
 with the raw CSV.
 
+You can read more about the motivations for posuto in [Parsing the Infamous
+Japanese Postal CSV](https://www.dampfkraft.com/posuto.html). 
+
 **issueを英語で書く必要はありません。**
 
 <img src="https://github.com/polm/posuto/raw/master/postcharacter.png" width=125 height=125 alt="Postbox character by Irasutoya" />
