@@ -62,6 +62,8 @@ NOTE_REGEX = '([^（]*)(（.*）?)?'
 def build_office_json(fname):
     """Office data is completely different from normal address data and so is handled separately."""
     data = {}
+    conn = sqlite3.connect('posuto/postaldata.db')
+    db = conn.cursor()
     with open(fname) as csvfile:
         reader = csv.DictReader(csvfile, JIGYOU_FIELDS)
         for row in reader:
@@ -92,6 +94,15 @@ def build_office_json(fname):
             assert status in (0, 1), "Unexpected correction status, should be 0 or 1"
             info['new'] = True if status == 1 else False
 
+            # retrieve missing prefecture_kana, city_kana, neighborhood_kana from entry in postal_data table and store them with office data
+            db.execute("select data from postal_data where neighborhood=:neighborhood and prefecture=:prefecture and city=:city", {"neighborhood": info['neighborhood'], "prefecture": info['prefecture'], "city": info['city']})
+            res = db.fetchone()
+            if res:
+                postaldata = json.loads(res[0])
+                info['prefecture_kana'] = postaldata['prefecture_kana']
+                info['city_kana'] = postaldata['city_kana']
+                info['neighborhood_kana'] = postaldata['neighborhood_kana']
+
             code = info['postal_code']
             if code in data:
                 data[code]['alternates'].append(info)
@@ -103,8 +114,6 @@ def build_office_json(fname):
     with open('posuto/officedata.json', 'w') as outfile:
         outfile.write(json.dumps(data, ensure_ascii=False, indent=2))
     # write sqlite db
-    conn = sqlite3.connect('posuto/postaldata.db')
-    db = conn.cursor()
     db.execute("drop table if exists office_data")
     db.execute("""
       create table office_data (
@@ -236,14 +245,18 @@ def build_json(fname):
     db.execute("drop table if exists postal_data")
     db.execute("""
       create table postal_data (
-        code text, data text)""")
+        code text, data text, prefecture text, city text, neighborhood text)""")
     for key, val in data.items():
         entry = json.dumps(val, ensure_ascii=False)
-        db.execute("insert into postal_data(code, data) values (?, ?)",
-                (key, entry))
+        # add additional columns for querying in order to fix office data
+        prefecture = val['prefecture']
+        city = val['city']
+        neighborhood = val['neighborhood']
+        db.execute("insert into postal_data(code, data, prefecture, city, neighborhood) values (?, ?, ?, ?, ?)",
+                (key, entry, prefecture, city, neighborhood))
     conn.commit()
     conn.close()
 
 if __name__ == '__main__':
-    build_office_json('raw/jigyousho.utf8.csv')
     build_json('raw/ken_all.utf8.csv')
+    build_office_json('raw/jigyousho.utf8.csv')
