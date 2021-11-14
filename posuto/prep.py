@@ -59,35 +59,21 @@ REASON = ('変更なし', '市政・区政・町政・分区・政令指定都�
 
 NOTE_REGEX = '([^（]*)(（.*）?)?'
 
-def get_cached_kana(db, cache, prefecture, city, neighborhood):
-    key = (prefecture, city, neighborhood)
-    hit = cache.get(key)
-    if hit:
-        return hit
+def build_kana_cache(db):
+    cache = {}
 
-    # Actually fetch from the DB
-    db.execute("""
-      select data from postal_data
-      where
-        prefecture = :prefecture and
-        city = :city and
-        neighborhood = :neighborhood""", {
-            "prefecture": prefecture,
-            "city": city,
-            "neighborhood": neighborhood
-        })
-    res = db.fetchone()
+    res = db.execute("select prefecture, city, neighborhood, data from postal_data")
+    for row in res.fetchall():
+        pref, city, hood, data = row
+        key = (pref, city, hood)
+        if key in cache:
+            continue
 
-    if not res:
-        return None
+        pdata = json.loads(data)
 
-    postaldata = json.loads(res[0])
-    readings = (postaldata['prefecture_kana'],
-            postaldata['city_kana'],
-            postaldata['neighborhood_kana'])
-
-    cache[key] = readings
-    return readings
+        readings = (pdata["prefecture_kana"], pdata["city_kana"], pdata["neighborhood_kana"])
+        cache[key] = readings
+    return cache
 
 def build_office_json(fname):
     """Office data is completely different from normal address data and so is handled separately."""
@@ -95,7 +81,7 @@ def build_office_json(fname):
     conn = sqlite3.connect('posuto/postaldata.db')
     db = conn.cursor()
 
-    kana_cache = {}
+    kana_cache = build_kana_cache(db)
 
     with open(fname) as csvfile:
         reader = csv.DictReader(csvfile, JIGYOU_FIELDS)
@@ -128,13 +114,14 @@ def build_office_json(fname):
             info['new'] = True if status == 1 else False
 
             # Get readings if available (should always be available)
-            readings = get_kana_cache(db, kana_cache, info['prefecture'],
-                    info['city'], info['neighborhood'])
+            #readings = get_cached_kana(db, kana_cache, info['prefecture'],
+            #        info['city'], info['neighborhood'])
+            key = (info['prefecture'], info['city'], info['neighborhood'])
+            readings = kana_cache.get(key, ("", "", ""))
 
-            if readings is not None:
-                info['prefecture_kana'] = readings['prefecture_kana']
-                info['city_kana'] = readings['city_kana']
-                info['neighborhood_kana'] = readings['neighborhood_kana']
+            info['prefecture_kana'] = readings[0]
+            info['city_kana'] = readings[1]
+            info['neighborhood_kana'] = readings[2]
 
             code = info['postal_code']
             if code in data:
