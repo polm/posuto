@@ -59,9 +59,30 @@ REASON = ('変更なし', '市政・区政・町政・分区・政令指定都�
 
 NOTE_REGEX = '([^（]*)(（.*）?)?'
 
+def build_kana_cache(db):
+    cache = {}
+
+    res = db.execute("select prefecture, city, neighborhood, data from postal_data")
+    for row in res.fetchall():
+        pref, city, hood, data = row
+        key = (pref, city, hood)
+        if key in cache:
+            continue
+
+        pdata = json.loads(data)
+
+        readings = (pdata["prefecture_kana"], pdata["city_kana"], pdata["neighborhood_kana"])
+        cache[key] = readings
+    return cache
+
 def build_office_json(fname):
     """Office data is completely different from normal address data and so is handled separately."""
     data = {}
+    conn = sqlite3.connect('posuto/postaldata.db')
+    db = conn.cursor()
+
+    kana_cache = build_kana_cache(db)
+
     with open(fname) as csvfile:
         reader = csv.DictReader(csvfile, JIGYOU_FIELDS)
         for row in reader:
@@ -92,6 +113,16 @@ def build_office_json(fname):
             assert status in (0, 1), "Unexpected correction status, should be 0 or 1"
             info['new'] = True if status == 1 else False
 
+            # Get readings if available (should always be available)
+            #readings = get_cached_kana(db, kana_cache, info['prefecture'],
+            #        info['city'], info['neighborhood'])
+            key = (info['prefecture'], info['city'], info['neighborhood'])
+            readings = kana_cache.get(key, ("", "", ""))
+
+            info['prefecture_kana'] = readings[0]
+            info['city_kana'] = readings[1]
+            info['neighborhood_kana'] = readings[2]
+
             code = info['postal_code']
             if code in data:
                 data[code]['alternates'].append(info)
@@ -103,8 +134,6 @@ def build_office_json(fname):
     with open('posuto/officedata.json', 'w') as outfile:
         outfile.write(json.dumps(data, ensure_ascii=False, indent=2))
     # write sqlite db
-    conn = sqlite3.connect('posuto/postaldata.db')
-    db = conn.cursor()
     db.execute("drop table if exists office_data")
     db.execute("""
       create table office_data (
@@ -236,14 +265,18 @@ def build_json(fname):
     db.execute("drop table if exists postal_data")
     db.execute("""
       create table postal_data (
-        code text, data text)""")
+        code text, data text, prefecture text, city text, neighborhood text)""")
     for key, val in data.items():
         entry = json.dumps(val, ensure_ascii=False)
-        db.execute("insert into postal_data(code, data) values (?, ?)",
-                (key, entry))
+        # add additional columns for querying in order to fix office data
+        prefecture = val['prefecture']
+        city = val['city']
+        neighborhood = val['neighborhood']
+        db.execute("insert into postal_data(code, data, prefecture, city, neighborhood) values (?, ?, ?, ?, ?)",
+                (key, entry, prefecture, city, neighborhood))
     conn.commit()
     conn.close()
 
 if __name__ == '__main__':
-    build_office_json('raw/jigyousho.utf8.csv')
     build_json('raw/ken_all.utf8.csv')
+    build_office_json('raw/jigyousho.utf8.csv')
