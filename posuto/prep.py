@@ -59,11 +59,44 @@ REASON = ('変更なし', '市政・区政・町政・分区・政令指定都�
 
 NOTE_REGEX = '([^（]*)(（.*）?)?'
 
+def get_cached_kana(db, cache, prefecture, city, neighborhood):
+    key = (prefecture, city, neighborhood)
+    hit = cache.get(key)
+    if hit:
+        return hit
+
+    # Actually fetch from the DB
+    db.execute("""
+      select data from postal_data
+      where
+        prefecture = :prefecture and
+        city = :city and
+        neighborhood = :neighborhood""", {
+            "prefecture": prefecture,
+            "city": city,
+            "neighborhood": neighborhood
+        })
+    res = db.fetchone()
+
+    if not res:
+        return None
+
+    postaldata = json.loads(res[0])
+    readings = (postaldata['prefecture_kana'],
+            postaldata['city_kana'],
+            postaldata['neighborhood_kana'])
+
+    cache[key] = readings
+    return readings
+
 def build_office_json(fname):
     """Office data is completely different from normal address data and so is handled separately."""
     data = {}
     conn = sqlite3.connect('posuto/postaldata.db')
     db = conn.cursor()
+
+    kana_cache = {}
+
     with open(fname) as csvfile:
         reader = csv.DictReader(csvfile, JIGYOU_FIELDS)
         for row in reader:
@@ -94,14 +127,14 @@ def build_office_json(fname):
             assert status in (0, 1), "Unexpected correction status, should be 0 or 1"
             info['new'] = True if status == 1 else False
 
-            # retrieve missing prefecture_kana, city_kana, neighborhood_kana from entry in postal_data table and store them with office data
-            db.execute("select data from postal_data where neighborhood=:neighborhood and prefecture=:prefecture and city=:city", {"neighborhood": info['neighborhood'], "prefecture": info['prefecture'], "city": info['city']})
-            res = db.fetchone()
-            if res:
-                postaldata = json.loads(res[0])
-                info['prefecture_kana'] = postaldata['prefecture_kana']
-                info['city_kana'] = postaldata['city_kana']
-                info['neighborhood_kana'] = postaldata['neighborhood_kana']
+            # Get readings if available (should always be available)
+            readings = get_kana_cache(db, kana_cache, info['prefecture'],
+                    info['city'], info['neighborhood'])
+
+            if readings is not None:
+                info['prefecture_kana'] = readings['prefecture_kana']
+                info['city_kana'] = readings['city_kana']
+                info['neighborhood_kana'] = readings['neighborhood_kana']
 
             code = info['postal_code']
             if code in data:
