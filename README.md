@@ -98,29 +98,6 @@ romaji (which are often not available anyway).
 
 Yomigana are converted to full-width kana. 
 
-## Romaji
-
-Romaji in the original file are in all caps. This is converted to title case. 
-
-The supplied romaji make no effort to accommodate words of foreign origin, so
-"スウェーデンヒルズ" is rendered as "Suedenhiruzu" rather than "Sweden Hills".
-It may be possible to improve on this but it's outside the scope of this
-library; it's better to use a good romanization library, like [cutlet](https://github.com/polm/cutlet).
-
-Some more issues:
-
-- 1006890: "大手町　ＪＡビル（地階・階層不明）" → "OTEMACHI JIEIEIBIRU(CHIKAI.KAISOFUM"
-  - JA → JIEIEI
-  - `・` → `.`
-  - transliteration is randomly truncated, also not translated
-- 1000004: "次のビルを除く" → "TSUGINOBIRUONOZOKU"
-
-In general use the romaji here with caution.
-
-    sweden = posuto.get('0613777')
-    print(sweden.romaji)
-    # "Hokkaido, Ishikari Gun Tobetsu Cho, Suedenhiruzu"
-
 ## Long Neighborhood Names
 
 The postal data README explains that when the neighborhood field is over 38
