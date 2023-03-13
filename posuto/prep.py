@@ -122,12 +122,13 @@ def build_office_json(fname):
             info['prefecture_kana'] = readings[0]
             info['city_kana'] = readings[1]
             info['neighborhood_kana'] = readings[2]
+            # Ensure alternates is set to avoid issues with instantiating the OfficeCodeBase named tuple.
+            info.setdefault('alternates', [])
 
             code = info['postal_code']
             if code in data:
                 data[code]['alternates'].append(info)
             else:
-                info['alternates'] = []
                 data[code] = info
 
     # write json file

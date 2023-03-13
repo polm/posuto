@@ -13,6 +13,12 @@ def test_mitsukoujimachi():
     # This may be unstable with time
     assert info.alternates[0].neighborhood == '三小牛町'
 
+def test_office_alternate_without_alternate():
+    # This used to be an error because an alternate did not itself contain alternates:
+    # <lambda>() missing 1 required positional argument: 'alternates'
+    info = posuto.get('2248524')
+    assert info.alternates[0].alternates == []
+
 def test_portcity():
     # see #8, this was also a romaji related error
     info = posuto.get("1057529")
