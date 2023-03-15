@@ -13,6 +13,12 @@ def test_mitsukoujimachi():
     # This may be unstable with time
     assert info.alternates[0].neighborhood == '三小牛町'
 
+def test_office_alternate_without_alternate():
+    # This used to be an error because an alternate did not itself contain alternates:
+    # <lambda>() missing 1 required positional argument: 'alternates'
+    info = posuto.get('2248524')
+    assert info.alternates[0].alternates == []
+
 def test_portcity():
     # see #8, this was also a romaji related error
     info = posuto.get("1057529")
@@ -31,11 +37,11 @@ def test_contextmanager():
         assert tower.kana == 'トウキョウトミナトクシバコウエン', "Address kana is wrong"
         assert tower.note == None, "Address note is wrong"
 
-def test_office():
+def test_office_code():
     info = posuto.get('8690198')
     assert info.name == '長洲町役場', "Address is wrong"
 
-def test_office():
+def test_office_kana():
     info = posuto.get('0608703')
     assert info.neighborhood_kana == "キタ１ジョウニシ", "Office kana are wrong"
 
