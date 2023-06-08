@@ -139,6 +139,9 @@ def build_office_json(fname):
     db.execute("""
       create table office_data (
         code text, data text)""")
+    db.execute("""
+      create index office_code_index on office_data(code)
+      """)
     for key, val in data.items():
         entry = json.dumps(val, ensure_ascii=False)
         db.execute("insert into office_data(code, data) values (?, ?)",
@@ -267,6 +270,7 @@ def build_json(fname):
     db.execute("""
       create table postal_data (
         code text, data text, prefecture text, city text, neighborhood text)""")
+    db.execute("create index postal_code_index on postal_data(code)")
     for key, val in data.items():
         entry = json.dumps(val, ensure_ascii=False)
         # add additional columns for querying in order to fix office data
