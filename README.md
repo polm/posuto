@@ -19,7 +19,7 @@ Features:
 - multi-line neighborhoods are joined
 - parenthetical notes are put in a separate field
 - change reasons are converted from flags to labels
-- romaji and kana records are unified for easy access
+- kana records are unified for easy access
 - codes with multiple areas provide a list of alternates
 
 To install:
@@ -38,8 +38,6 @@ Example usage:
     # "東京都"
     print(🗼.kana)
     # "トウキョウトミナトクシバコウエン"
-    print(🗼.romaji)
-    # "Tokyo To, Minato Ku, Shibakoen"
     print(🗼.note)
     # None
 
