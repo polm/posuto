@@ -22,6 +22,8 @@ Features:
 - kana records are unified for easy access
 - codes with multiple areas provide a list of alternates
 
+Romaji provided by JP Post were previously included in this library, but they are extremely low quality and hard to sync, due to being updated separately. If you need romaji it is recommended you use [cutlet](https://github.com/polm/cutlet) instead.
+
 To install:
 
     pip install posuto
