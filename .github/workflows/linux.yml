@@ -20,6 +20,9 @@ jobs:
         python -m pip install --upgrade setuptools wheel pip setuptools-scm
         pip install mojimoji pytest
         pip install .
+    - name: Preprocess data
+      run: |
+        make all
     - name: Run tests
       run: |
         pytest
