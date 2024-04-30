@@ -203,7 +203,7 @@ def build_json(fname):
                 row['note'] = note[1:-1] # trim parens
                 row['note'] = mojimoji.zen_to_han(row['note'], kana=False) # no zengaku :P
                 # don't need kana for note
-                row['neighborhood_kana'] = re.sub('\(.*\)?', '', row['neighborhood_kana'])
+                row['neighborhood_kana'] = re.sub(r'\(.*\)?', '', row['neighborhood_kana'])
 
             # fix hankaku
             for field in PARTS:
