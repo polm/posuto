@@ -1,4 +1,4 @@
-mojimoji==0.0.12
+mojimoji==0.0.13
 packaging==23.1
 setuptools-scm==7.1.0
 typing_extensions==4.7.0
