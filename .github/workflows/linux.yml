@@ -35,5 +35,5 @@ jobs:
         python -m pip install --upgrade pip
         pip install twine setuptools-scm build
         python -m build
-        twine upload dist/posuto*.tar.gz
+        twine upload dist/posuto*.tar.gz dist/posuto*.whl
 
