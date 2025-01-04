@@ -12,7 +12,7 @@ Japanese Postal CSV](https://www.dampfkraft.com/posuto.html).
 
 **issueを英語で書く必要はありません。**
 
-<img src="https://github.com/polm/posuto/raw/master/postcharacter.png" width=125 height=125 alt="Postbox character by Irasutoya" />
+<img src="https://github.com/polm/posuto/raw/main/postcharacter.png" width=125 height=125 alt="Postbox character by Irasutoya" />
 
 Features:
 
@@ -46,7 +46,7 @@ Example usage:
 **Note:** Unfortunately 〒 and 🗼 are not valid identifiers in Python, so the
 above is pseudocode. See [examples/sample.py][] for an executable version.
 
-[examples/sample.py]: https://github.com/polm/posuto/blob/master/examples/sample.py
+[examples/sample.py]: https://github.com/polm/posuto/blob/main/examples/sample.py
 
 You can provide a postal code with basic formatting, and postal data will be
 returned as a named tuple with a few convenience functions. Read on for details
