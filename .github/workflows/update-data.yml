@@ -21,8 +21,7 @@ jobs:
       - run: pip install -r requirements-dev.txt
       - name: Download and rebuild current data
         run: |
-          rm -f raw/ken_all.zip raw/utf_ken_all.zip raw/utf_ken_all.csv raw/ken_all.utf8.csv
-          rm -f raw/jigyosyo.zip raw/JIGYOSYO.CSV raw/jigyousho.utf8.csv
+          make clean
           make all
       - name: Test rebuilt package data
         run: pytest
