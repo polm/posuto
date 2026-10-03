@@ -1,0 +1,43 @@
+name: Update Japan Post data
+
+on:
+  schedule:
+    - cron: '17 3 2 * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: pip install -r requirements-dev.txt
+      - name: Download and rebuild current data
+        run: |
+          make clean
+          make all
+      - name: Test rebuilt package data
+        run: pytest
+      - name: Summarize changes
+        run: python scripts/summarize_update.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: japan-post-update-summary
+          path: update-summary.md
+      - uses: peter-evans/create-pull-request@v7
+        with:
+          branch: data/monthly-japan-post-update
+          delete-branch: true
+          commit-message: 'data: update Japan Post postal records'
+          title: 'data: update Japan Post postal records'
+          body-path: update-summary.md
+          add-paths: |
+            raw/*.csv
+            posuto/*.json
