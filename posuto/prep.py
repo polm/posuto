@@ -203,12 +203,15 @@ def build_json(fname):
                 row['note'] = note[1:-1] # trim parens
                 row['note'] = mojimoji.zen_to_han(row['note'], kana=False) # no zengaku :P
                 # don't need kana for note
-                row['neighborhood_kana'] = re.sub(r'\(.*\)?', '', row['neighborhood_kana'])
+                row['neighborhood_kana'] = re.sub(r'\(.*\)?|（.*）?', '', row['neighborhood_kana'])
 
             # fix hankaku
             for field in PARTS:
                 key = field + '_kana'
                 row[key] = mojimoji.han_to_zen(row[key])
+                # the official UTF-8 file uses U+2212 where the SJIS file's
+                # halfwidth '-' becomes U+FF0D via han_to_zen; keep output stable
+                row[key] = row[key].replace('\u2212', '\uFF0D')
 
             # handle flags
             row['partial'] = int(row['partial']) == 1
